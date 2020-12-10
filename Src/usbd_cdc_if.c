@@ -32,7 +32,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t pLineCodingBuffer[7];
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -219,11 +219,23 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-
+      pLineCodingBuffer[0] = pbuf[0];
+      pLineCodingBuffer[1] = pbuf[1];
+      pLineCodingBuffer[2] = pbuf[2];
+      pLineCodingBuffer[3] = pbuf[3];
+      pLineCodingBuffer[4] = pbuf[4];
+      pLineCodingBuffer[5] = pbuf[5];
+      pLineCodingBuffer[6] = pbuf[6];
     break;
 
     case CDC_GET_LINE_CODING:
-
+      pbuf[0] = pLineCodingBuffer[0];
+      pbuf[1] = pLineCodingBuffer[1];
+      pbuf[2] = pLineCodingBuffer[2];
+      pbuf[3] = pLineCodingBuffer[3];
+      pbuf[4] = pLineCodingBuffer[4];
+      pbuf[5] = pLineCodingBuffer[5];
+      pbuf[6] = pLineCodingBuffer[6];
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
