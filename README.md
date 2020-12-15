@@ -6,6 +6,7 @@
 
 ### Build command
 ```sh
+export PATH="YOUR_TOOLCHAIN_DIR/gcc-arm-none-eabi-9-2020-q2-update/bin:$PATH"
 $ ./unixformat.sh && make clean && make -j 4 && make board
 ```
 
