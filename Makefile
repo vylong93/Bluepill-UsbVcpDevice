@@ -194,6 +194,12 @@ board:
 	st-flash --format ihex write $(BUILD_DIR)/*.hex || (echo Command failed $$?. Please make sure pin Boot0 is HIGH and reset the MCU!; exit 1)
 
 #######################################
+# Program via STM32F HID Bootloader
+#######################################
+flash: $(BUILD_DIR)/$(TARGET).bin
+	hid-flash $(BUILD_DIR)/$(TARGET).bin
+
+#######################################
 # clean up
 #######################################
 clean:
