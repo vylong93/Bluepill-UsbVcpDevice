@@ -81,7 +81,7 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+  //SystemClock_Config(); // TODO: Evaluate this function why it break the device
 
   /* USER CODE BEGIN SysInit */
 
