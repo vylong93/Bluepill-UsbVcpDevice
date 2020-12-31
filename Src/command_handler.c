@@ -11,9 +11,19 @@
   */
 
 #include "command_handler.h"
+#include "stdbool.h"
+
+typedef struct cmd_gpio {
+  GPIO_TypeDef* pGpioBase;
+  GPIO_PinState state;
+  uint16_t pin;
+} cmd_gpio_t;
+
+bool parse_gpio_struct(uint8_t portPin, uint8_t state, cmd_gpio_t * pOut);
 
 cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len);
 cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state);
+cmd_response_t init_port_pin(uint8_t portPin, uint8_t direction, uint8_t state);
 
 /**
   * @brief  Handle Serial Command
@@ -67,7 +77,7 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       if (payloadSize != COMMAND_INIT_GPIO_PAYLOAD_SIZE) {
         return HANDLER_UNKNOWN_ERROR;
       }
-      break;
+      return init_port_pin(pBuff[3] /* Port+Pin */, pBuff[4] /* Direction */, pBuff[5] /* New State */);
 
     case COMMAND_SET_PIN_STATE:
       if (payloadSize != COMMAND_SET_PIN_STATE_PAYLOAD_SIZE) {
@@ -79,6 +89,7 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       if (payloadSize != COMMAND_SPI_TRANSFER_PAYLOAD_SIZE) {
         return HANDLER_UNKNOWN_ERROR;
       }
+      // TODO
       break;
 
     default:
@@ -89,20 +100,60 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
 }
 
 cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state) {
+  cmd_gpio_t gpioTarget;
+  if (!parse_gpio_struct(portPin, state, &gpioTarget))
+    return HANDLER_UNKNOWN_ERROR;
+
+  HAL_GPIO_WritePin(gpioTarget.pGpioBase, gpioTarget.pin, gpioTarget.state);
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t init_port_pin(uint8_t portPin, uint8_t direction, uint8_t state) {
+  cmd_gpio_t gpioTarget;
+  if (!parse_gpio_struct(portPin, state, &gpioTarget))
+    return HANDLER_UNKNOWN_ERROR;
+
+  HAL_GPIO_WritePin(gpioTarget.pGpioBase, gpioTarget.pin, gpioTarget.state);
+
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin = gpioTarget.pin;
+  if (direction == COMMAND_PIN_DIR_OUTPUT) {
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  } else if (direction == COMMAND_PIN_DIR_INPUT) {
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+  } else {
+    return HANDLER_UNKNOWN_ERROR;
+  }
+
+  HAL_GPIO_Init(gpioTarget.pGpioBase, &GPIO_InitStruct);
+  return HANDLER_SUCCESS;
+}
+
+bool parse_gpio_struct(uint8_t portPin, uint8_t state, cmd_gpio_t * pOut) {
   uint8_t port = portPin & COMMAND_PORT_MASK;
   uint8_t pin = portPin & COMMAND_PIN_MASK;
 
-  GPIO_PinState newState = (state) ? (GPIO_PIN_SET) : (GPIO_PIN_RESET);
-  GPIO_TypeDef* pGpioBase = NULL;
-
-  if (port == COMMAND_PORT_A) pGpioBase = GPIOA;
-  else if (port == COMMAND_PORT_B) pGpioBase = GPIOB;
-  else if (port == COMMAND_PORT_C) pGpioBase = GPIOC;
+  if (state == COMMAND_PIN_STATE_LOW)
+    pOut->state = GPIO_PIN_RESET;
+  else if (state == COMMAND_PIN_STATE_HIGH)
+    pOut->state = GPIO_PIN_SET;
   else
-    return HANDLER_UNKNOWN_ERROR;
+      return false;
 
-  HAL_GPIO_WritePin(pGpioBase, (uint16_t)(0x0001 << pin), newState);
-  return HANDLER_SUCCESS;
+  if (port == COMMAND_PORT_A)
+    pOut->pGpioBase = GPIOA;
+  else if (port == COMMAND_PORT_B)
+    pOut->pGpioBase = GPIOB;
+  else if (port == COMMAND_PORT_C)
+    pOut->pGpioBase = GPIOC;
+  else
+    return false;
+
+  pOut->pin = (uint16_t)(0x0001 << pin);
+  return true;
 }
 
 /***************************************************************END OF FILE****/

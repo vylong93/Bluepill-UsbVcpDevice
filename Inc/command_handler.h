@@ -35,7 +35,13 @@ extern "C" {
 #define COMMAND_PORT_A       (0xA0)
 #define COMMAND_PORT_B       (0xB0)
 #define COMMAND_PORT_C       (0xC0)
-#define COMMAND_PIN_MASK     (0x0F)
+
+#define COMMAND_PIN_DIR_INPUT   (0x49)
+#define COMMAND_PIN_DIR_OUTPUT  (0x4F)
+
+#define COMMAND_PIN_MASK        (0x0F)
+#define COMMAND_PIN_STATE_LOW   (0x00)
+#define COMMAND_PIN_STATE_HIGH  (0x01)
 
 typedef enum cmd_response {
   HANDLER_SUCCESS = 0,
