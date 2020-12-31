@@ -13,6 +13,7 @@
 #include "command_handler.h"
 
 cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len);
+cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state);
 
 /**
   * @brief  Handle Serial Command
@@ -72,20 +73,7 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       if (payloadSize != COMMAND_SET_PIN_STATE_PAYLOAD_SIZE) {
         return HANDLER_UNKNOWN_ERROR;
       }
-
-      uint8_t port = pBuff[3] & COMMAND_PORT_MASK;
-      uint8_t pin = pBuff[3] & COMMAND_PIN_MASK;
-      GPIO_PinState newState = (pBuff[4]) ? (GPIO_PIN_SET) : (GPIO_PIN_RESET);
-
-      GPIO_TypeDef* pGpioBase = NULL;
-      if (port == COMMAND_PORT_A) pGpioBase = GPIOA;
-      else if (port == COMMAND_PORT_B) pGpioBase = GPIOB;
-      else if (port == COMMAND_PORT_C) pGpioBase = GPIOC;
-      else
-        return HANDLER_UNKNOWN_ERROR;
-
-      HAL_GPIO_WritePin(pGpioBase, (uint16_t)(0x0001 << pin), newState);
-      break;
+      return set_pin_output_state(pBuff[3] /* Port+Pin */, pBuff[4] /* New State */);
 
     case COMMAND_SPI_TRANSFER:
       if (payloadSize != COMMAND_SPI_TRANSFER_PAYLOAD_SIZE) {
@@ -97,6 +85,23 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       return HANDLER_UNKNOWN_ERROR;
   }
 
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state) {
+  uint8_t port = portPin & COMMAND_PORT_MASK;
+  uint8_t pin = portPin & COMMAND_PIN_MASK;
+
+  GPIO_PinState newState = (state) ? (GPIO_PIN_SET) : (GPIO_PIN_RESET);
+  GPIO_TypeDef* pGpioBase = NULL;
+
+  if (port == COMMAND_PORT_A) pGpioBase = GPIOA;
+  else if (port == COMMAND_PORT_B) pGpioBase = GPIOB;
+  else if (port == COMMAND_PORT_C) pGpioBase = GPIOC;
+  else
+    return HANDLER_UNKNOWN_ERROR;
+
+  HAL_GPIO_WritePin(pGpioBase, (uint16_t)(0x0001 << pin), newState);
   return HANDLER_SUCCESS;
 }
 
