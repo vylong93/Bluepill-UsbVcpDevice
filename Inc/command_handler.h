@@ -20,6 +20,23 @@ extern "C" {
 
 #include "stm32f1xx_hal.h"
 
+#define COMMAND_HEADER        (0xAA)
+#define COMMAND_MAX_LENGTH    (6)
+
+#define COMMAND_INIT_GPIO     (0xF0)
+#define COMMAND_SET_PIN_STATE (0xF1)
+#define COMMAND_SPI_TRANSFER  (0xF2)
+
+#define COMMAND_INIT_GPIO_PAYLOAD_SIZE     (3)
+#define COMMAND_SET_PIN_STATE_PAYLOAD_SIZE (2)
+#define COMMAND_SPI_TRANSFER_PAYLOAD_SIZE  (2)
+
+#define COMMAND_PORT_MASK    (0xF0)
+#define COMMAND_PORT_A       (0xA0)
+#define COMMAND_PORT_B       (0xB0)
+#define COMMAND_PORT_C       (0xC0)
+#define COMMAND_PIN_MASK     (0x0F)
+
 typedef enum cmd_response {
   HANDLER_SUCCESS = 0,
   HANDLER_UNKNOWN_ERROR = 1
