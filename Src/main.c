@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "string.h"
+#include "sevenseg_driver.h"
 
 /* USER CODE END Includes */
 
@@ -99,6 +100,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  test_sevenseg_tube();
   Turn_On_StatusLED();
   while (1)
   {
