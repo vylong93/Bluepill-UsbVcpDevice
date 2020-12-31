@@ -55,6 +55,9 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
+void Turn_On_StatusLED(void);
+void Turn_Off_StatusLED(void);
+void Toggle_StatusLED(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
