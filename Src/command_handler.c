@@ -13,6 +13,8 @@
 #include "command_handler.h"
 #include "stdbool.h"
 
+extern SPI_HandleTypeDef hspi2; /* main.c */
+
 typedef struct cmd_gpio {
   GPIO_TypeDef* pGpioBase;
   GPIO_PinState state;
@@ -22,6 +24,7 @@ typedef struct cmd_gpio {
 bool parse_gpio_struct(uint8_t portPin, uint8_t state, cmd_gpio_t * pOut);
 
 cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len);
+cmd_response_t transfer_serial_data(uint8_t highByte, uint8_t lowByte);
 cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state);
 cmd_response_t init_port_pin(uint8_t portPin, uint8_t direction, uint8_t state);
 
@@ -89,13 +92,18 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       if (payloadSize != COMMAND_SPI_TRANSFER_PAYLOAD_SIZE) {
         return HANDLER_UNKNOWN_ERROR;
       }
-      // TODO
-      break;
+      return transfer_serial_data(pBuff[3] /* HIGH byte */, pBuff[4] /* LOW byte */);
 
     default:
       return HANDLER_UNKNOWN_ERROR;
   }
 
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t transfer_serial_data(uint8_t highByte, uint8_t lowByte) {
+  HAL_SPI_Transmit(&hspi2, &highByte, 1, 1);
+  HAL_SPI_Transmit(&hspi2, &lowByte, 1, 1);
   return HANDLER_SUCCESS;
 }
 
