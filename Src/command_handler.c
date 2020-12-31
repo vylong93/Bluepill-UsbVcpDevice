@@ -76,9 +76,15 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       uint8_t port = pBuff[3] & COMMAND_PORT_MASK;
       uint8_t pin = pBuff[3] & COMMAND_PIN_MASK;
       GPIO_PinState newState = (pBuff[4]) ? (GPIO_PIN_SET) : (GPIO_PIN_RESET);
-      if ((COMMAND_PORT_C == port) && (13 == pin)) {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, newState);
-      }
+
+      GPIO_TypeDef* pGpioBase = NULL;
+      if (port == COMMAND_PORT_A) pGpioBase = GPIOA;
+      else if (port == COMMAND_PORT_B) pGpioBase = GPIOB;
+      else if (port == COMMAND_PORT_C) pGpioBase = GPIOC;
+      else
+        return HANDLER_UNKNOWN_ERROR;
+
+      HAL_GPIO_WritePin(pGpioBase, (uint16_t)(0x0001 << pin), newState);
       break;
 
     case COMMAND_SPI_TRANSFER:
