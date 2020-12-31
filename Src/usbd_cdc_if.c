@@ -24,6 +24,7 @@
 
 /* USER CODE BEGIN INCLUDE */
 
+#include "command_handler.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -274,7 +275,14 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  CDC_Transmit_FS(Buf, *Len); // Echo - Loopback
+  if (HANDLER_SUCCESS == handle_serial_command(Buf, *Len)) {
+    //uint8_t ResBuf[1] = { 0x55 };
+    //CDC_Transmit_FS(ResBuf, 1);
+    CDC_Transmit_FS(Buf, *Len); // Echo - Loopback
+  }
+  /* NOTE: The device will hang up if something go wrong,
+   * no need to response error. Use timeout mechanism in Host!
+   */
   return (USBD_OK);
   /* USER CODE END 6 */
 }
