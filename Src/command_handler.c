@@ -133,11 +133,13 @@ cmd_response_t transfer_serial_data(uint8_t highByte, uint8_t lowByte) {
 
 cmd_response_t start_sampling(void) {
   HAL_ADC_Start_IT(&hadc1);
+  HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_4);
   return HANDLER_SUCCESS;
 }
 
 cmd_response_t stop_sampling(void) {
   HAL_ADC_Stop_IT(&hadc1);
+  HAL_TIM_OC_Stop_IT(&htim4, TIM_CHANNEL_4);
   return HANDLER_SUCCESS;
 }
 
