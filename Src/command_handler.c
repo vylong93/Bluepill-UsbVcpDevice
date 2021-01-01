@@ -17,6 +17,7 @@ extern SPI_HandleTypeDef hspi2; /* main.c */
 extern ADC_HandleTypeDef hadc1; /* main.c */
 extern TIM_HandleTypeDef htim4; /* main.c */
 extern uint16_t gui16Tim4CCR4Step;
+extern uint32_t gui32StopSampling;
 
 typedef struct cmd_gpio {
   GPIO_TypeDef* pGpioBase;
@@ -144,8 +145,18 @@ cmd_response_t stop_sampling(void) {
 }
 
 cmd_response_t set_sampling_internal(uint8_t interval) {
+  stop_sampling(); // For safe
+  if (interval == 0) {
+    gui32StopSampling = 2; // Stop after sending more 2 samples
+  }
+
   gui16Tim4CCR4Step = 257 /* 2^16/255 */ * interval;
-  htim4.Instance->CCR4 += gui16Tim4CCR4Step;
+  if (gui16Tim4CCR4Step == 0) {
+    htim4.Instance->CCR4 += 100;
+    start_sampling();
+  } else {
+    htim4.Instance->CCR4 += gui16Tim4CCR4Step;
+  }
   return HANDLER_SUCCESS;
 }
 

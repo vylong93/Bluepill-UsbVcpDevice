@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "string.h"
+#include "stdbool.h"
 
 /* USER CODE END Includes */
 
@@ -59,6 +60,7 @@ TIM_HandleTypeDef htim4;
  *  + CCR4 interval in 1 sec  : (1/(48000000/32767))*1464 = 0.999s
  */
 uint16_t gui16Tim4CCR4Step = 1464; // 1 sec
+uint32_t gui32StopSampling = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,6 +123,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if ((gui16Tim4CCR4Step == 0) && (gui32StopSampling == 0)) {
+      HAL_ADC_Stop_IT(&hadc1);
+      HAL_TIM_OC_Stop_IT(&htim4, TIM_CHANNEL_4);
+      gui16Tim4CCR4Step = 1464;
+      Turn_On_StatusLED();
+    }
   }
   /* USER CODE END 3 */
 }
@@ -381,6 +389,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   txBuf[3] = '\r';
   txBuf[4] = '\n';
   CDC_Transmit_FS(txBuf, 5);
+
+  /* HACK: stop sampling after sending ten more sample */
+  if (gui16Tim4CCR4Step == 0) {
+    if (gui32StopSampling) {
+      --gui32StopSampling;
+    }
+  }
 }
 
 /**
@@ -391,7 +406,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (TIM4 == htim->Instance) {
-    htim4.Instance->CCR4 += gui16Tim4CCR4Step;
+    if (gui16Tim4CCR4Step == 0) {
+      htim4.Instance->CCR4 += 100;
+    } else {
+      htim4.Instance->CCR4 += gui16Tim4CCR4Step;
+    }
   }
 }
 /* USER CODE END 4 */
