@@ -14,6 +14,7 @@
 #include "stdbool.h"
 
 extern SPI_HandleTypeDef hspi2; /* main.c */
+extern ADC_HandleTypeDef hadc1; /* main.c */
 
 typedef struct cmd_gpio {
   GPIO_TypeDef* pGpioBase;
@@ -27,6 +28,8 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len);
 cmd_response_t transfer_serial_data(uint8_t highByte, uint8_t lowByte);
 cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state);
 cmd_response_t init_port_pin(uint8_t portPin, uint8_t direction, uint8_t state);
+cmd_response_t start_sampling(void);
+cmd_response_t stop_sampling(void);
 
 /**
   * @brief  Handle Serial Command
@@ -94,6 +97,18 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       }
       return transfer_serial_data(pBuff[3] /* HIGH byte */, pBuff[4] /* LOW byte */);
 
+    case COMMAND_START_SAMPLING:
+      if (payloadSize != COMMAND_START_SAMPLING_PAYLOAD_SIZE) {
+        return HANDLER_UNKNOWN_ERROR;
+      }
+      return start_sampling();
+
+    case COMMAND_STOP_SAMPLING:
+      if (payloadSize != COMMAND_STOP_SAMPLING_PAYLOAD_SIZE) {
+        return HANDLER_UNKNOWN_ERROR;
+      }
+      return stop_sampling();
+
     default:
       return HANDLER_UNKNOWN_ERROR;
   }
@@ -104,6 +119,16 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
 cmd_response_t transfer_serial_data(uint8_t highByte, uint8_t lowByte) {
   HAL_SPI_Transmit(&hspi2, &highByte, 1, 1);
   HAL_SPI_Transmit(&hspi2, &lowByte, 1, 1);
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t start_sampling(void) {
+  HAL_ADC_Start_IT(&hadc1);
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t stop_sampling(void) {
+  HAL_ADC_Stop_IT(&hadc1);
   return HANDLER_SUCCESS;
 }
 
