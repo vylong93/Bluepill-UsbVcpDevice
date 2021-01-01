@@ -310,7 +310,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   txBuf[2] = result & 0xFF;
   txBuf[3] = '\r';
   txBuf[4] = '\n';
-  CDC_Transmit_FS(txBuf, 4);
+  CDC_Transmit_FS(txBuf, 5);
 }
 /* USER CODE END 4 */
 
