@@ -53,13 +53,12 @@ TIM_HandleTypeDef htim4;
 
 /* Interval calculation:
  *  + APB1 Timer clock : 48MHz
- *  + Timer Prescaler 16-bits : 65535
+ *  + Timer Prescaler 16-bits : 32767
  *  + Internal Clock Division : 1 # No Clock Division in STM32F103C8T6 !!!!
- *  + Maximum interval [65536]: (1/(48000000/65535))*65536 = 1/732.433 * 65536 = 89.477s
- *  + CCR4 interval in 1 sec  : (1/(48000000/65535))*732 = 0.999s       # 732
- *  + CCR4 interval in 255 sec: (1/(48000000/65535))*(732*89) = 88.947s # 65148
+ *  + Maximum interval [65536]: (1/(48000000/32767))*65536 = 1/1464.888 * 65536 = 44.7378s
+ *  + CCR4 interval in 1 sec  : (1/(48000000/32767))*1464 = 0.999s
  */
-uint16_t gui16Tim4CCR4Step = 732; // 1 sec
+uint16_t gui16Tim4CCR4Step = 1464; // 1 sec
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
