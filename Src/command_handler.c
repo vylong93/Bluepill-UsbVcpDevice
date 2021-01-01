@@ -15,6 +15,8 @@
 
 extern SPI_HandleTypeDef hspi2; /* main.c */
 extern ADC_HandleTypeDef hadc1; /* main.c */
+extern TIM_HandleTypeDef htim4; /* main.c */
+extern uint16_t gui16Tim4CCR4Step;
 
 typedef struct cmd_gpio {
   GPIO_TypeDef* pGpioBase;
@@ -30,6 +32,7 @@ cmd_response_t set_pin_output_state(uint8_t portPin, uint8_t state);
 cmd_response_t init_port_pin(uint8_t portPin, uint8_t direction, uint8_t state);
 cmd_response_t start_sampling(void);
 cmd_response_t stop_sampling(void);
+cmd_response_t set_sampling_internal(uint8_t interval);
 
 /**
   * @brief  Handle Serial Command
@@ -109,6 +112,12 @@ cmd_response_t handle_single_command(uint8_t * pBuff, uint32_t len) {
       }
       return stop_sampling();
 
+    case COMMAND_SET_SAMPLING_INTERVAL:
+      if (payloadSize != COMMAND_SET_SAMPLING_INTERVAL_PAYLOAD_SIZE) {
+        return HANDLER_UNKNOWN_ERROR;
+      }
+      return set_sampling_internal(pBuff[3] /* Interval */);
+
     default:
       return HANDLER_UNKNOWN_ERROR;
   }
@@ -129,6 +138,12 @@ cmd_response_t start_sampling(void) {
 
 cmd_response_t stop_sampling(void) {
   HAL_ADC_Stop_IT(&hadc1);
+  return HANDLER_SUCCESS;
+}
+
+cmd_response_t set_sampling_internal(uint8_t interval) {
+  gui16Tim4CCR4Step = 257 /* 2^16/255 */ * interval;
+  htim4.Instance->CCR4 += gui16Tim4CCR4Step;
   return HANDLER_SUCCESS;
 }
 

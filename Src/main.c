@@ -51,6 +51,15 @@ TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 
+/* Interval calculation:
+ *  + APB1 Timer clock : 48MHz
+ *  + Timer Prescaler 16-bits : 65535
+ *  + Internal Clock Division : 1 # No Clock Division in STM32F103C8T6 !!!!
+ *  + Maximum interval [65536]: (1/(48000000/65535))*65536 = 1/732.433 * 65536 = 89.477s
+ *  + CCR4 interval in 1 sec  : (1/(48000000/65535))*732 = 0.999s       # 732
+ *  + CCR4 interval in 255 sec: (1/(48000000/65535))*(732*89) = 88.947s # 65148
+ */
+uint16_t gui16Tim4CCR4Step = 732; // 1 sec
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -373,6 +382,18 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   txBuf[3] = '\r';
   txBuf[4] = '\n';
   CDC_Transmit_FS(txBuf, 5);
+}
+
+/**
+  * @brief  Output Compare callback in non-blocking mode
+  * @param  htim TIM OC handle
+  * @retval None
+  */
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (TIM4 == htim->Instance) {
+    htim4.Instance->CCR4 += gui16Tim4CCR4Step;
+  }
 }
 /* USER CODE END 4 */
 
