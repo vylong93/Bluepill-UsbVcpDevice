@@ -276,8 +276,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   if (HANDLER_SUCCESS == handle_serial_command(Buf, *Len)) {
-    uint8_t ResBuf[4] = { 'O', 'K', '\r', '\n' };
-    CDC_Transmit_FS(ResBuf, 4);
+    uint8_t ResBuf[5] = { 0x55, 'O', 'K', '\r', '\n' };
+    CDC_Transmit_FS(ResBuf, 5);
     //CDC_Transmit_FS(Buf, *Len); // Echo - Loopback
   }
   /* NOTE: The device will hang up if something go wrong,

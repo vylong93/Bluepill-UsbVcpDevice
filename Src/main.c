@@ -302,13 +302,14 @@ void Toggle_StatusLED(void) {
   */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-  uint8_t txBuf[4];
+  uint8_t txBuf[5];
   uint32_t result = HAL_ADC_GetValue(hadc);
 
-  txBuf[0] = (result >> 8) & 0xFF;
-  txBuf[1] = result & 0xFF;
-  txBuf[2] = '\r';
-  txBuf[3] = '\n';
+  txBuf[0] = 'V';
+  txBuf[1] = (result >> 8) & 0xFF;
+  txBuf[2] = result & 0xFF;
+  txBuf[3] = '\r';
+  txBuf[4] = '\n';
   CDC_Transmit_FS(txBuf, 4);
 }
 /* USER CODE END 4 */
