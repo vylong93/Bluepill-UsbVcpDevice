@@ -294,6 +294,23 @@ void Turn_Off_StatusLED(void) {
 void Toggle_StatusLED(void) {
   HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 }
+
+/**
+  * @brief  Conversion complete callback in non blocking mode
+  * @param  hadc: ADC handle
+  * @retval None
+  */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  uint8_t txBuf[4];
+  uint32_t result = HAL_ADC_GetValue(hadc);
+
+  txBuf[0] = (result >> 8) & 0xFF;
+  txBuf[1] = result & 0xFF;
+  txBuf[2] = '\r';
+  txBuf[3] = '\n';
+  CDC_Transmit_FS(txBuf, 4);
+}
 /* USER CODE END 4 */
 
 /**
